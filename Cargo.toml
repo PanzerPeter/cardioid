@@ -1,0 +1,22 @@
+[package]
+name = "cardioid"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+description = "A filtered virtual microphone for PipeWire that carries your mic and nothing else"
+license = "MIT"
+repository = "https://github.com/PanzerPeter/cardioid"
+readme = "README.md"
+keywords = ["pipewire", "microphone", "audio", "noise-suppression", "linux"]
+categories = ["multimedia::audio"]
+
+[dependencies]
+eframe = { version = "0.37.0", default-features = false, features = ["glow", "wayland", "x11", "default_fonts"] }
+ksni = { version = "0.3.7", features = ["blocking"] }
+libc = "0.2.191"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+
+[profile.release]
+lto = "thin"
+strip = true
