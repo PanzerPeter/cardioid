@@ -49,5 +49,9 @@ DESKTOP
 entry "$bin" > "$apps/cardioid.desktop"
 entry "$bin --background" > "$autostart/cardioid.desktop"
 
+# Running KDE processes index icon folders at startup, so a new icon stays
+# missing until they rescan. Must happen before the tray item registers.
+dbus-send --session --type=signal /KIconLoader org.kde.KIconLoader.iconChanged int32:0 2>/dev/null || true
+
 "$bin" --background >/dev/null 2>&1 &
 echo "Installed. Cardioid is running and starts at login."
