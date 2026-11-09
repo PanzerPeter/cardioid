@@ -280,8 +280,16 @@ impl TestRecorder {
         self.stop_playback();
         self.length = None;
         self.error = None;
-        let started = pw::record(NODE, &Take::Filtered.path())
-            .and_then(|filtered| Ok((filtered, pw::record(device, &Take::Original.path())?)));
+        let started =
+            pw::record(NODE, &Take::Filtered.path()).and_then(|filtered| {
+                match pw::record(device, &Take::Original.path()) {
+                    Ok(original) => Ok((filtered, original)),
+                    Err(e) => {
+                        pw::stop_recording(filtered);
+                        Err(e)
+                    }
+                }
+            });
         match started {
             Ok((filtered, original)) => {
                 self.state = TestState::Recording {

@@ -16,7 +16,7 @@ if [ "${1:-}" = "--uninstall" ]; then
     exit 0
 fi
 
-for tool in cargo pipewire pw-cli pw-dump pw-metadata pw-record pw-play pactl; do
+for tool in pipewire pw-cli pw-dump pw-metadata pw-record pw-play pactl; do
     command -v "$tool" >/dev/null || { echo "Missing $tool, see Requirements in the README." >&2; exit 1; }
 done
 if command -v pacman >/dev/null; then
@@ -27,11 +27,18 @@ if command -v pacman >/dev/null; then
     fi
 fi
 
-cargo build --release
+# A release download ships the binary next to this script; a git clone builds it.
+if [ -x ./cardioid ]; then
+    built=./cardioid
+else
+    command -v cargo >/dev/null || { echo "Missing cargo, see Requirements in the README." >&2; exit 1; }
+    cargo build --release --locked
+    built=target/release/cardioid
+fi
 
 mkdir -p "$(dirname "$bin")" "$apps" "$icons" "$autostart"
 pkill -x cardioid || true
-install -m755 target/release/cardioid "$bin"
+install -m755 "$built" "$bin"
 install -m644 assets/cardioid.svg "$icons/"
 
 entry() {

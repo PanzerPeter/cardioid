@@ -1,6 +1,6 @@
 //! Thin wrappers over the PipeWire command line tools.
 
-use crate::chain::{CAPTURE, NODE};
+use crate::chain::CAPTURE;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::io::{self, Read};
@@ -65,13 +65,19 @@ pub fn graph() -> Graph {
         .unwrap_or_default()
 }
 
+/// The default source, but only if it is a real mic. A virtual source (another
+/// filter app, a sink monitor, Cardioid itself) must never become the input.
 pub fn default_mic() -> Option<String> {
     let out = Command::new("pactl")
         .arg("get-default-source")
         .output()
         .ok()?;
     let name = String::from_utf8(out.stdout).ok()?.trim().to_string();
-    (!name.is_empty() && name != NODE).then_some(name)
+    graph()
+        .mics
+        .iter()
+        .any(|(mic, _)| *mic == name)
+        .then_some(name)
 }
 
 pub fn set_ports(ports: &BTreeMap<String, f32>) {
@@ -159,9 +165,11 @@ impl Meter {
         let mut stdout = child.stdout.take().expect("stdout is piped");
         let shared = peak.clone();
         std::thread::spawn(move || {
+            // read_exact keeps every read on a sample boundary; a short read
+            // would shift all later samples and show garbage peaks.
             let mut buf = [0u8; 2048];
-            while let Ok(n @ 1..) = stdout.read(&mut buf) {
-                let block = buf[..n]
+            while stdout.read_exact(&mut buf).is_ok() {
+                let block = buf
                     .as_chunks::<4>()
                     .0
                     .iter()

@@ -110,6 +110,10 @@ fn service(open_window: bool) -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(TryLockError::Error(e)) => return Err(e.into()),
     }
+    // Bound before anything slow, so a second launch right after this one
+    // finds the socket instead of failing to connect.
+    let _ = fs::remove_file(&socket);
+    let listener = UnixListener::bind(&socket)?;
 
     let mut settings = Settings::load();
     if settings.device.is_empty()
@@ -123,8 +127,6 @@ fn service(open_window: bool) -> Result<(), Box<dyn std::error::Error>> {
     thread::spawn(move || run_filters(&conf_path));
 
     let (tx, rx) = mpsc::channel();
-    let _ = fs::remove_file(&socket);
-    let listener = UnixListener::bind(&socket)?;
     let socket_tx = tx.clone();
     thread::spawn(move || {
         for mut stream in listener.incoming().flatten() {

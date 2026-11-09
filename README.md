@@ -33,7 +33,7 @@ different input gain and gate settings.
 
 - PipeWire with WirePlumber, including the `pw-*` tools and `pactl`
 - `lsp-plugins-lv2`, `calf` and `noise-suppression-for-voice`
-- Rust 1.95 or newer
+- Rust 1.95 or newer, only when building from source
 - A desktop with a StatusNotifierItem tray. KDE Plasma has one built in, GNOME
   needs the AppIndicator extension.
 
@@ -47,12 +47,21 @@ own package names. The installer only checks for them on pacman systems.
 
 ## Install
 
+Download `cardioid-<version>-x86_64-unknown-linux-gnu.tar.gz` from the
+[releases page](https://github.com/PanzerPeter/cardioid/releases), then:
+
+    tar -xzf cardioid-*-x86_64-unknown-linux-gnu.tar.gz
+    cd cardioid-*-x86_64-unknown-linux-gnu
+    ./install.sh
+
+To build from source instead:
+
     git clone https://github.com/PanzerPeter/cardioid
     cd cardioid
     ./install.sh
 
-The script builds Cardioid into `~/.local/bin`, adds it to the app menu and starts
-it at login. `./install.sh --uninstall` removes all of that and keeps your settings.
+The script installs Cardioid into `~/.local/bin`, building it first when run from a
+clone, adds it to the app menu and starts it at login. `./install.sh --uninstall` removes all of that and keeps your settings.
 
 ## Use
 
